@@ -1,0 +1,39 @@
+{
+  "name": "smile-gift-charity",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "autoprefixer": "^10.4.16",
+    "classnames": "^2.5.1",
+    "framer-motion": "^11.0.3",
+    "lucide-react": "^0.511.0",
+    "next": "14.1.0",
+    "next-intl": "^3.4.4",
+    "nextjs-toploader": "^3.8.16",
+    "postcss": "^8.4.33",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.49.3",
+    "react-icons": "^5.0.1",
+    "react-id-swiper": "^4.0.0",
+    "react-intersection-observer": "^9.5.3",
+    "react-responsive": "^9.0.2",
+    "sonner": "^2.0.3",
+    "swiper": "^11.0.5",
+    "tailwindcss": "^3.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "14.1.0",
+    "typescript": "^5.3.3"
+  }
+}
