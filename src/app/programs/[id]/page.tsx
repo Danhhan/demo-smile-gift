@@ -15,7 +15,7 @@ import { allPrograms, getRelatedPrograms } from "./helpers";
 import ShareButtons from "@/components/sections/ShareButtons";
 import GallerySection from "@/components/sections/GallerySection";
 import ResultsSection from "@/components/sections/ResultsSection";
-import RegistrationForm from "@/components/sections/RegistrationForm";
+import Button from "@/components/ui/Button";
 
 export default function ProgramDetail({ params }: any) {
 	const { id } = params;
@@ -23,6 +23,7 @@ export default function ProgramDetail({ params }: any) {
 	const [activeTab, setActiveTab] = useState("about");
 	const relatedPrograms = getRelatedPrograms(Number(id));
 	const program = allPrograms.find((p) => p.id === Number(id));
+
 	if (!program) {
 		return (
 			<div className="container mx-auto pt-40 pb-20 px-4">
@@ -33,22 +34,16 @@ export default function ProgramDetail({ params }: any) {
 					<p className="mb-8">
 						Chương trình bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.
 					</p>
-					<a
+					<Link
 						href="/programs"
 						className="inline-block px-6 py-2 bg-black text-white rounded-lg hover:bg-black/90 transition-colors"
 					>
 						Quay lại trang chương trình
-					</a>
+					</Link>
 				</div>
 			</div>
 		);
 	}
-	const registrationProgress =
-		program.status === "upcoming"
-			? ((Number(program.maxAttendees) - Number(program.remainingSlots)) /
-					Number(program.maxAttendees)) *
-			  100
-			: 100;
 
 	return (
 		<div className="pt-24 pb-16">
@@ -106,10 +101,7 @@ export default function ProgramDetail({ params }: any) {
 								<Users className="h-5 w-5 mr-2" />
 								<span>
 									{program.status === "upcoming"
-										? `${
-												Number(program.maxAttendees) -
-												Number(program.remainingSlots)
-										  }/${program.maxAttendees} người tham gia`
+										? `${program.maxAttendees} người tham gia`
 										: program.results?.beneficiaries + " người được hỗ trợ"}
 								</span>
 							</div>
@@ -117,12 +109,11 @@ export default function ProgramDetail({ params }: any) {
 
 						<div className="flex flex-wrap gap-4">
 							{program.status === "upcoming" && (
-								<Link
-									href={`/programs/${program.id}/register`}
-									className="px-6 py-2 bg-black text-white rounded-lg hover:bg-black/90 transition-colors"
-								>
-									Đăng ký tham gia
-								</Link>
+								<Button variant="primary" size="lg">
+									<Link href={`/programs/${program.id}/register`}>
+										Đăng ký tham gia
+									</Link>
+								</Button>
 							)}
 
 							<div className="relative">
@@ -223,31 +214,6 @@ export default function ProgramDetail({ params }: any) {
 											</p>
 										))}
 								</div>
-
-								<h2 className="text-2xl font-bold mt-12 mb-6">
-									Thông tin liên hệ
-								</h2>
-								<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-									<div className="bg-gray-50 p-6 rounded-lg">
-										<h3 className="font-semibold mb-2">Đơn vị tổ chức</h3>
-										<p>{program.organizer}</p>
-									</div>
-
-									<div className="bg-gray-50 p-6 rounded-lg">
-										<h3 className="font-semibold mb-2">Người phụ trách</h3>
-										<p>{program.contactPerson}</p>
-									</div>
-
-									<div className="bg-gray-50 p-6 rounded-lg">
-										<h3 className="font-semibold mb-2">Số điện thoại</h3>
-										<p>{program.phoneNumber}</p>
-									</div>
-
-									<div className="bg-gray-50 p-6 rounded-lg">
-										<h3 className="font-semibold mb-2">Email</h3>
-										<p>{program.email}</p>
-									</div>
-								</div>
 							</div>
 						)}
 
@@ -292,46 +258,28 @@ export default function ProgramDetail({ params }: any) {
 					<div className="lg:col-span-1">
 						{program.status === "upcoming" ? (
 							<div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-								<h2 className="text-xl font-bold mb-4">Đăng ký tham gia</h2>
-
-								<div className="mb-6">
-									<div className="flex justify-between text-sm mb-2">
-										<span>Số lượng đăng ký</span>
-										<span className="font-medium">
-											{Number(program.maxAttendees) -
-												Number(program.remainingSlots)}
-											/{program.maxAttendees}
-										</span>
-									</div>
-									<div className="w-full bg-gray-200 rounded-full h-2.5">
-										<div
-											className="bg-black h-2.5 rounded-full transition-all duration-500"
-											style={{ width: `${registrationProgress}%` }}
-										></div>
-									</div>
-									<p className="text-sm text-gray-500 mt-2">
-										Còn {program.remainingSlots} suất đăng ký
-									</p>
-								</div>
+								<h2 className="text-xl font-bold mb-4">Thông tin chương trình</h2>
 
 								<div className="space-y-4 mb-6">
 									<div className="flex justify-between">
-										<span>Phí tham gia:</span>
-										<span className="font-semibold">
-											{program.registrationFee}
-										</span>
+										<span>Thời gian:</span>
+										<span className="font-semibold">{program.date}</span>
 									</div>
 									<div className="flex justify-between">
 										<span>Địa điểm:</span>
 										<span>{program.location}</span>
 									</div>
 									<div className="flex justify-between">
-										<span>Ngày diễn ra:</span>
-										<span>{program.date}</span>
+										<span>Số lượng:</span>
+										<span>{program.maxAttendees} người</span>
 									</div>
 								</div>
 
-								<RegistrationForm programId={program.id} />
+								<Button variant="primary" size="lg" fullWidth>
+									<Link href={`/programs/${program.id}/register`}>
+										Đăng ký tham gia
+									</Link>
+								</Button>
 							</div>
 						) : (
 							<div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-8">
