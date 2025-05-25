@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { FaCalendarAlt, FaMapMarkerAlt, FaFilter, FaSearch } from 'react-icons/fa';
+import { FaCalendarAlt, FaMapMarkerAlt, FaFilter, FaSearch, FaClock, FaCheckCircle } from 'react-icons/fa';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 
@@ -44,6 +44,11 @@ const allPrograms = [
     description: 'Chương trình công quả tại Tổ Đình Phật Bửu, phân phát thực phẩm và quà cho người già neo đơn.',
     category: 'Công quả',
     status: 'completed',
+    results: {
+      volunteersParticipated: 30,
+      beneficiaries: 150,
+      mealsServed: 300
+    }
   },
   {
     id: 5,
@@ -54,6 +59,11 @@ const allPrograms = [
     description: 'Đêm nhạc gây quỹ với chủ đề "ĐÊM", quyên góp được 50 triệu đồng cho quỹ học bổng sinh viên.',
     category: 'Gây quỹ',
     status: 'completed',
+    results: {
+      volunteersParticipated: 45,
+      beneficiaries: 20,
+      fundsRaised: '50.000.000 đ'
+    }
   },
   {
     id: 6,
@@ -64,6 +74,11 @@ const allPrograms = [
     description: 'Chương trình tặng quà Tết cho người vô gia cư tại khu vực trung tâm thành phố.',
     category: 'Tặng quà',
     status: 'completed',
+    results: {
+      volunteersParticipated: 25,
+      beneficiaries: 100,
+      giftsDistributed: 100
+    }
   },
 ];
 
@@ -102,33 +117,24 @@ export default function ProgramsPage() {
                     className="w-full py-3 pl-10 pr-4 bg-white/10 text-white placeholder-white/60 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/50"
                   />
                 </div>
-                <div className="flex gap-4">
-                  <select className="py-3 px-4 bg-white/10 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/50 appearance-none cursor-pointer">
-                    <option value="">Tất cả danh mục</option>
-                    <option value="fundraising">Gây quỹ</option>
-                    <option value="volunteer">Công quả</option>
-                    <option value="medical">Y tế</option>
-                    <option value="gift">Tặng quà</option>
-                  </select>
-                  <select className="py-3 px-4 bg-white/10 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/50 appearance-none cursor-pointer">
-                    <option value="">Trạng thái</option>
-                    <option value="upcoming">Sắp diễn ra</option>
-                    <option value="completed">Đã hoàn thành</option>
-                  </select>
-                </div>
+                <select className="py-3 px-4 bg-white/10 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/50 appearance-none cursor-pointer">
+                  <option value="">Tất cả danh mục</option>
+                  <option value="fundraising">Gây quỹ</option>
+                  <option value="volunteer">Công quả</option>
+                  <option value="medical">Y tế</option>
+                  <option value="gift">Tặng quà</option>
+                </select>
               </div>
             </div>
           </div>
         </div>
       </div>
       
-      {/* Upcoming Programs */}
+      {/* Programs List */}
       <section className="py-16">
         <div className="container-custom">
-          <h2 className="text-3xl font-bold mb-8">Sắp diễn ra</h2>
-          
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {allPrograms.filter(p => p.status === 'upcoming').map((program) => (
+            {allPrograms.map((program) => (
               <Card key={program.id} className="h-full flex flex-col">
                 <div className="relative h-48 w-full">
                   <Image
@@ -137,8 +143,25 @@ export default function ProgramsPage() {
                     fill
                     className="object-cover"
                   />
-                  <div className="absolute top-3 left-3 bg-primary-700 text-white text-sm font-medium px-3 py-1 rounded-full">
-                    {program.category}
+                  <div className="absolute top-3 left-3 flex gap-2">
+                    <span className="bg-primary-700 text-white text-xs font-medium px-3 py-1 rounded-full">
+                      {program.category}
+                    </span>
+                    <span className={`text-white text-xs font-medium px-3 py-1 rounded-full flex items-center gap-1
+                      ${program.status === 'upcoming' ? 'bg-green-600' : 'bg-blue-600'}`}
+                    >
+                      {program.status === 'upcoming' ? (
+                        <>
+                          <FaClock className="text-[10px]" />
+                          Sắp diễn ra
+                        </>
+                      ) : (
+                        <>
+                          <FaCheckCircle className="text-[10px]" />
+                          Đã hoàn thành
+                        </>
+                      )}
+                    </span>
                   </div>
                 </div>
                 
@@ -156,65 +179,45 @@ export default function ProgramsPage() {
                     {program.description}
                   </p>
                   
-                  <div className="grid grid-cols-2 gap-2 mt-2">
-                    <Button variant="outline" size="sm">
-                      <Link href={`/programs/${program.id}`}>
-                        Chi tiết
-                      </Link>
-                    </Button>
-                    
-                    <Button variant="primary" size="sm">
-                      <Link href={`/programs/${program.id}/register`}>
-                        Đăng ký
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-      
-      {/* Completed Programs */}
-      <section className="py-16 bg-neutral-50">
-        <div className="container-custom">
-          <h2 className="text-3xl font-bold mb-8">Đã hoàn thành</h2>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {allPrograms.filter(p => p.status === 'completed').map((program) => (
-              <Card key={program.id} className="h-full flex flex-col">
-                <div className="relative h-48 w-full">
-                  <Image
-                    src={program.image}
-                    alt={program.title}
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute top-3 left-3 bg-secondary-500 text-white text-sm font-medium px-3 py-1 rounded-full">
-                    {program.category}
-                  </div>
-                </div>
-                
-                <div className="p-6 flex-grow flex flex-col">
-                  <div className="mb-3 flex items-center text-sm text-neutral-500">
-                    <FaCalendarAlt className="mr-1" />
-                    <span className="mr-3">{program.date}</span>
-                    <FaMapMarkerAlt className="mr-1" />
-                    <span>{program.location}</span>
-                  </div>
-                  
-                  <h3 className="text-xl font-bold mb-3">{program.title}</h3>
-                  
-                  <p className="text-neutral-600 mb-4 flex-grow">
-                    {program.description}
-                  </p>
-                  
-                  <Button variant="outline" size="sm">
-                    <Link href={`/programs/${program.id}`}>
-                      Xem kết quả
-                    </Link>
-                  </Button>
+                  {program.status === 'upcoming' ? (
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      <Button variant="outline" size="sm">
+                        <Link href={`/programs/${program.id}`}>
+                          Chi tiết
+                        </Link>
+                      </Button>
+                      
+                      <Button variant="primary" size="sm">
+                        <Link href={`/programs/${program.id}/register`}>
+                          Đăng ký
+                        </Link>
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="mt-4 pt-4 border-t border-neutral-100">
+                      {program.results && (
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-primary-600">
+                              {program.results.volunteersParticipated}
+                            </div>
+                            <div className="text-sm text-neutral-500">TNV tham gia</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-primary-600">
+                              {program.results.beneficiaries}
+                            </div>
+                            <div className="text-sm text-neutral-500">Người thụ hưởng</div>
+                          </div>
+                        </div>
+                      )}
+                      <Button variant="outline" size="sm" fullWidth>
+                        <Link href={`/programs/${program.id}`}>
+                          Xem kết quả
+                        </Link>
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </Card>
             ))}
