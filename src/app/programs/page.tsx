@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
-import { FaCalendarAlt, FaMapMarkerAlt, FaFilter, FaSearch, FaClock, FaCheckCircle, FaInbox } from 'react-icons/fa';
+import Image from 'next/image';
+import { FaCalendarAlt, FaMapMarkerAlt, FaSearch, FaFilter, FaClock, FaCheckCircle, FaInbox } from 'react-icons/fa';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 
@@ -85,18 +85,23 @@ const allPrograms = [
   },
 ];
 
+const ITEMS_PER_PAGE = 3;
+
 export default function ProgramsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [filteredPrograms, setFilteredPrograms] = useState(allPrograms);
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageInputValue, setPageInputValue] = useState('1');
+  
+  const totalPages = Math.ceil(filteredPrograms.length / ITEMS_PER_PAGE);
+  
   useEffect(() => {
-    // Simulate API loading
     const loadData = async () => {
       setIsLoading(true);
       try {
-        await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 1500));
         const filtered = allPrograms.filter(program => {
           const matchesSearch = program.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                               program.description.toLowerCase().includes(searchTerm.toLowerCase());
@@ -104,6 +109,8 @@ export default function ProgramsPage() {
           return matchesSearch && matchesCategory;
         });
         setFilteredPrograms(filtered);
+        setCurrentPage(1);
+        setPageInputValue('1');
       } finally {
         setIsLoading(false);
       }
@@ -111,8 +118,51 @@ export default function ProgramsPage() {
     loadData();
   }, [searchTerm, selectedCategory]);
 
-  // Extract unique categories
   const categories = [...new Set(allPrograms.map(program => program.category))];
+  
+  const handlePageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setPageInputValue(value);
+    
+    const pageNumber = parseInt(value);
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(prev => prev - 1);
+      setPageInputValue((currentPage - 1).toString());
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(prev => prev + 1);
+      setPageInputValue((currentPage + 1).toString());
+    }
+  };
+
+  const handlePageInputBlur = () => {
+    const pageNumber = parseInt(pageInputValue);
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    } else {
+      setPageInputValue(currentPage.toString());
+    }
+  };
+
+  const handlePageInputKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handlePageInputBlur();
+    }
+  };
+
+  const currentPrograms = filteredPrograms.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   return (
     <div className="pt-24">
@@ -172,7 +222,7 @@ export default function ProgramsPage() {
           {isLoading ? (
             // Loading State
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[1, 2, 3, 4, 5, 6].map((n) => (
+              {[1, 2, 3].map((n) => (
                 <div key={n} className="animate-pulse">
                   <div className="bg-neutral-200 h-48 rounded-t-lg"></div>
                   <div className="bg-white p-6 rounded-b-lg">
@@ -210,95 +260,132 @@ export default function ProgramsPage() {
             </div>
           ) : (
             // Programs Grid
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredPrograms.map((program) => (
-                <Card key={program.id} className="h-full flex flex-col">
-                  <div className="relative h-48 w-full">
-                    <Image
-                      src={program.image}
-                      alt={program.title}
-                      fill
-                      className="object-cover"
+            <>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {currentPrograms.map((program) => (
+                  <Card key={program.id} className="h-full flex flex-col">
+                    <div className="relative h-48 w-full">
+                      <Image
+                        src={program.image}
+                        alt={program.title}
+                        fill
+                        className="object-cover"
+                      />
+                      <div className="absolute top-3 left-3 flex gap-2">
+                        <span className="bg-primary-700 text-white text-xs font-medium px-3 py-1 rounded-full">
+                          {program.category}
+                        </span>
+                        <span className={`text-white text-xs font-medium px-3 py-1 rounded-full flex items-center gap-1
+                          ${program.status === 'upcoming' ? 'bg-green-600' : 'bg-blue-600'}`}
+                        >
+                          {program.status === 'upcoming' ? (
+                            <>
+                              <FaClock className="text-[10px]" />
+                              Sắp diễn ra
+                            </>
+                          ) : (
+                            <>
+                              <FaCheckCircle className="text-[10px]" />
+                              Đã hoàn thành
+                            </>
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="p-6 flex-grow flex flex-col">
+                      <div className="mb-3 flex items-center text-sm text-neutral-500">
+                        <FaCalendarAlt className="mr-1" />
+                        <span className="mr-3">{program.date}</span>
+                        <FaMapMarkerAlt className="mr-1" />
+                        <span>{program.location}</span>
+                      </div>
+                      
+                      <h3 className="text-xl font-bold mb-3">{program.title}</h3>
+                      
+                      <p className="text-neutral-600 mb-4 flex-grow">
+                        {program.description}
+                      </p>
+                      
+                      {program.status === 'upcoming' ? (
+                        <div className="grid grid-cols-2 gap-2 mt-2">
+                          <Button variant="outline" size="sm">
+                            <Link href={`/programs/${program.id}`}>
+                              Chi tiết
+                            </Link>
+                          </Button>
+                          
+                          <Button variant="primary" size="sm">
+                            <Link href={`/programs/${program.id}/register`}>
+                              Đăng ký
+                            </Link>
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="mt-4 pt-4 border-t border-neutral-100">
+                          {program.results && (
+                            <div className="grid grid-cols-2 gap-4 mb-4">
+                              <div className="text-center">
+                                <div className="text-2xl font-bold text-primary-600">
+                                  {program.results.volunteersParticipated}
+                                </div>
+                                <div className="text-sm text-neutral-500">TNV tham gia</div>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-2xl font-bold text-primary-600">
+                                  {program.results.beneficiaries}
+                                </div>
+                                <div className="text-sm text-neutral-500">Người thụ hưởng</div>
+                              </div>
+                            </div>
+                          )}
+                          <Button variant="outline" size="sm" fullWidth>
+                            <Link href={`/programs/${program.id}`}>
+                              Xem kết quả
+                            </Link>
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {filteredPrograms.length > ITEMS_PER_PAGE && (
+                <div className="mt-12 flex justify-center items-center gap-4">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handlePrevPage}
+                    disabled={currentPage === 1}
+                  >
+                    Trước
+                  </Button>
+
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={pageInputValue}
+                      onChange={handlePageInputChange}
+                      onBlur={handlePageInputBlur}
+                      onKeyPress={handlePageInputKeyPress}
+                      className="w-16 text-center px-2 py-1 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                     />
-                    <div className="absolute top-3 left-3 flex gap-2">
-                      <span className="bg-primary-700 text-white text-xs font-medium px-3 py-1 rounded-full">
-                        {program.category}
-                      </span>
-                      <span className={`text-white text-xs font-medium px-3 py-1 rounded-full flex items-center gap-1
-                        ${program.status === 'upcoming' ? 'bg-green-600' : 'bg-blue-600'}`}
-                      >
-                        {program.status === 'upcoming' ? (
-                          <>
-                            <FaClock className="text-[10px]" />
-                            Sắp diễn ra
-                          </>
-                        ) : (
-                          <>
-                            <FaCheckCircle className="text-[10px]" />
-                            Đã hoàn thành
-                          </>
-                        )}
-                      </span>
-                    </div>
+                    <span className="text-neutral-600">/ {totalPages}</span>
                   </div>
-                  
-                  <div className="p-6 flex-grow flex flex-col">
-                    <div className="mb-3 flex items-center text-sm text-neutral-500">
-                      <FaCalendarAlt className="mr-1" />
-                      <span className="mr-3">{program.date}</span>
-                      <FaMapMarkerAlt className="mr-1" />
-                      <span>{program.location}</span>
-                    </div>
-                    
-                    <h3 className="text-xl font-bold mb-3">{program.title}</h3>
-                    
-                    <p className="text-neutral-600 mb-4 flex-grow">
-                      {program.description}
-                    </p>
-                    
-                    {program.status === 'upcoming' ? (
-                      <div className="grid grid-cols-2 gap-2 mt-2">
-                        <Button variant="outline" size="sm">
-                          <Link href={`/programs/${program.id}`}>
-                            Chi tiết
-                          </Link>
-                        </Button>
-                        
-                        <Button variant="primary" size="sm">
-                          <Link href={`/programs/${program.id}/register`}>
-                            Đăng ký
-                          </Link>
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="mt-4 pt-4 border-t border-neutral-100">
-                        {program.results && (
-                          <div className="grid grid-cols-2 gap-4 mb-4">
-                            <div className="text-center">
-                              <div className="text-2xl font-bold text-primary-600">
-                                {program.results.volunteersParticipated}
-                              </div>
-                              <div className="text-sm text-neutral-500">TNV tham gia</div>
-                            </div>
-                            <div className="text-center">
-                              <div className="text-2xl font-bold text-primary-600">
-                                {program.results.beneficiaries}
-                              </div>
-                              <div className="text-sm text-neutral-500">Người thụ hưởng</div>
-                            </div>
-                          </div>
-                        )}
-                        <Button variant="outline" size="sm" fullWidth>
-                          <Link href={`/programs/${program.id}`}>
-                            Xem kết quả
-                          </Link>
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </Card>
-              ))}
-            </div>
+
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages}
+                  >
+                    Tiếp
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>
