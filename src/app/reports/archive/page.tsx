@@ -91,6 +91,8 @@ const allReports = [
   },
 ];
 
+const ITEMS_PER_PAGE = 5;
+
 export default function ReportsArchivePage() {
   const [ref, inView] = useInView({
     triggerOnce: true,
@@ -102,6 +104,7 @@ export default function ReportsArchivePage() {
   const [selectedYear, setSelectedYear] = useState('all');
   const [sortBy, setSortBy] = useState('date');
   const [sortOrder, setSortOrder] = useState('desc');
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Get unique years from reports
   const years = [...new Set(allReports.map(report => 
@@ -129,6 +132,19 @@ export default function ReportsArchivePage() {
       }
       return 0;
     });
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredReports.length / ITEMS_PER_PAGE);
+  const paginatedReports = filteredReports.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  // Reset to first page when filters change
+  const handleFilterChange = (callback: Function) => {
+    setCurrentPage(1);
+    callback();
+  };
 
   return (
     <div className="pt-24">
@@ -176,7 +192,7 @@ export default function ReportsArchivePage() {
                       type="text"
                       placeholder="Tìm kiếm báo cáo..."
                       value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onChange={(e) => handleFilterChange(() => setSearchTerm(e.target.value))}
                       className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                     />
                     <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
@@ -189,7 +205,7 @@ export default function ReportsArchivePage() {
                   </label>
                   <select
                     value={selectedType}
-                    onChange={(e) => setSelectedType(e.target.value)}
+                    onChange={(e) => handleFilterChange(() => setSelectedType(e.target.value))}
                     className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   >
                     <option value="all">Tất cả</option>
@@ -204,7 +220,7 @@ export default function ReportsArchivePage() {
                   </label>
                   <select
                     value={selectedYear}
-                    onChange={(e) => setSelectedYear(e.target.value)}
+                    onChange={(e) => handleFilterChange(() => setSelectedYear(e.target.value))}
                     className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   >
                     <option value="all">Tất cả</option>
@@ -221,14 +237,14 @@ export default function ReportsArchivePage() {
                   <div className="flex gap-2">
                     <select
                       value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value)}
+                      onChange={(e) => handleFilterChange(() => setSortBy(e.target.value))}
                       className="flex-1 px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                     >
                       <option value="date">Ngày</option>
                       <option value="downloads">Lượt tải</option>
                     </select>
                     <button
-                      onClick={() => setSortOrder(order => order === 'asc' ? 'desc' : 'asc')}
+                      onClick={() => handleFilterChange(() => setSortOrder(order => order === 'asc' ? 'desc' : 'asc'))}
                       className="px-4 py-2 border border-neutral-300 rounded-lg hover:bg-neutral-50"
                     >
                       {sortOrder === 'desc' ? '↓' : '↑'}
@@ -236,11 +252,18 @@ export default function ReportsArchivePage() {
                   </div>
                 </div>
               </div>
+
+              {/* Results count */}
+              <div className="mt-4 pt-4 border-t border-neutral-200">
+                <p className="text-sm text-neutral-600">
+                  Hiển thị {paginatedReports.length} trong tổng số {filteredReports.length} báo cáo
+                </p>
+              </div>
             </div>
 
             {/* Reports List */}
             <div className="space-y-4">
-              {filteredReports.map((report) => (
+              {paginatedReports.map((report) => (
                 <motion.div
                   key={report.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -287,6 +310,7 @@ export default function ReportsArchivePage() {
               ))}
             </div>
 
+            {/* Empty State */}
             {filteredReports.length === 0 && (
               <div className="text-center py-12">
                 <div className="text-5xl mb-4">📊</div>
@@ -294,6 +318,45 @@ export default function ReportsArchivePage() {
                 <p className="text-neutral-600">
                   Không có báo cáo nào phù hợp với tiêu chí tìm kiếm của bạn.
                 </p>
+              </div>
+            )}
+
+            {/* Pagination */}
+            {filteredReports.length > 0 && (
+              <div className="mt-8 flex justify-center items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(page => Math.max(1, page - 1))}
+                  disabled={currentPage === 1}
+                >
+                  Trước
+                </Button>
+
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`w-10 h-10 flex items-center justify-center rounded-lg transition-colors ${
+                        currentPage === page
+                          ? 'bg-primary-700 text-white'
+                          : 'text-neutral-600 hover:bg-neutral-100'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(page => Math.min(totalPages, page + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  Tiếp
+                </Button>
               </div>
             )}
           </motion.div>
